@@ -1,101 +1,130 @@
-import Image from "next/image";
+"use client"
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Copy, ToggleLeft, ToggleRight, Trash2, Link } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import generateUserFeedbackID from '@/utils/generateUserFeedbackID';
+import { toggleActiveState, deleteFeedbackURL } from '@/utils/feedbackApiHandlers/index';
+import { useUser } from '@clerk/nextjs';
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [feedbackURL, setFeedbackURL] = useState('');
+  const [isActive, setIsActive] = useState(true);
+  const [statusMessage, setStatusMessage] = useState('');
+  const {user}= useUser();
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+  useEffect(() => {
+    // Generate the feedback URL when component mounts
+    const generatedID = generateUserFeedbackID();
+    setFeedbackURL(`feedback.yourdomain.com/${generatedID}`);
+  }, []);
+
+  const handleCopyURL = async () => {
+    try {
+      await navigator.clipboard.writeText(feedbackURL);
+      setStatusMessage('URL copied to clipboard!');
+      setTimeout(() => setStatusMessage(''), 3000);
+    } catch (err) {
+      setStatusMessage('Failed to copy URL. Please try copying manually.');
+      setTimeout(() => setStatusMessage(''), 3000);
+    }
+  };
+
+  const handleToggleActive = async () => {
+    try {
+      // await toggleActiveState(feedbackURL);
+      setIsActive(!isActive);
+      setStatusMessage(`Feedback URL ${isActive ? 'deactivated' : 'activated'} successfully`);
+      setTimeout(() => setStatusMessage(''), 3000);
+    } catch (err) {
+      setStatusMessage('Failed to toggle active state');
+      setTimeout(() => setStatusMessage(''), 3000);
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      // await deleteFeedbackURL(feedbackURL);
+      setStatusMessage('Feedback URL deleted successfully');
+      // Generate new feedback URL after deletion
+      const newID = generateUserFeedbackID();
+      setFeedbackURL(`feedback.yourdomain.com/${newID}`);
+      setTimeout(() => setStatusMessage(''), 3000);
+    } catch (err) {
+      setStatusMessage('Failed to delete feedback URL');
+      setTimeout(() => setStatusMessage(''), 3000);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
+      <div className="max-w-4xl mx-auto">
+        <Card className="shadow-lg">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold text-gray-900">
+              Feedback URL Management
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Status Message */}
+            {statusMessage && (
+              <Alert>
+                <AlertDescription>{statusMessage}</AlertDescription>
+              </Alert>
+            )}
+
+            {/* URL Display Card */}
+            <div className="bg-white rounded-lg border p-4 flex flex-col sm:flex-row items-center gap-4">
+              <div className="flex items-center gap-2 flex-grow min-w-0">
+                <Link className="h-5 w-5 text-gray-500 flex-shrink-0" />
+                <span className="text-gray-700 truncate">
+                  {feedbackURL}
+                </span>
+              </div>
+              <div className="flex gap-2 w-full sm:w-auto">
+                <Button
+                  onClick={handleCopyURL}
+                  variant="outline"
+                  className="flex-1 sm:flex-none"
+                >
+                  <Copy className="h-4 w-4 mr-2" />
+                  Copy
+                </Button>
+                <Button
+                  onClick={handleToggleActive}
+                  variant={isActive ? "default" : "secondary"}
+                  className="flex-1 sm:flex-none"
+                >
+                  {isActive ? (
+                    <ToggleRight className="h-4 w-4 mr-2" />
+                  ) : (
+                    <ToggleLeft className="h-4 w-4 mr-2" />
+                  )}
+                  {isActive ? 'Active' : 'Inactive'}
+                </Button>
+                <Button
+                  onClick={handleDelete}
+                  variant="destructive"
+                  className="flex-1 sm:flex-none"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </Button>
+              </div>
+            </div>
+
+            {/* Status Information */}
+            <Alert>
+              <AlertDescription>
+                {isActive
+                  ? "Your feedback URL is currently active and accepting responses."
+                  : "Your feedback URL is currently inactive and not accepting responses."}
+              </AlertDescription>
+            </Alert>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
