@@ -1,33 +1,39 @@
 import { auth } from "@clerk/nextjs/server";
-import { NextApiRequest, NextApiResponse } from "next";
-import Feedback from "@/models/feedback.models";
+import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/dbConnect";
-import { NextResponse } from "next/server";
+import Feedback from "@/models/feedback.models";
 
-export async function DELETE(req: NextApiRequest, res: NextApiResponse) {
-  const { userId } = await auth();
-
-  if (!userId) {
-    return res.status(401).json({ message: "Unauthorized" });
-  }
-
+export async function PUT(req: NextRequest) {
   try {
-    await dbConnect();
-    const { urlId } = req.query;
-    const feedbackPost = await Feedback.findOneAndDelete({
-      urlId,
-    });
-
-    if (!feedbackPost) {
-      return res
-        .status(404)
-        .json({ message: "Couldn't delete the feedback url!" });
+    // Authenticate the user
+    const { userId } =await auth();
+    if (!userId) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    return NextResponse.json({ message: "Feedback url deleted!" , status: 200});
-  } catch (error: any) {
-    return res
-      .status(500)
-      .json({ message: "Couldn't delete the feedback url!" });
+    await dbConnect(); // Ensure database connection
+
+    // Extract `urlId` from query parameters
+    const urlId = req.nextUrl.searchParams.get("urlId");
+    if (!urlId) {
+      return NextResponse.json({ message: "Missing URL ID" }, { status: 400 });
+    }
+
+    console.log(`Deleting feedback for user: ${userId}, URL ID: ${urlId}`);
+
+    // Find and delete the feedback entry
+    const feedbackPost = await Feedback.findOne({ urlId });
+    if (!feedbackPost) {
+      return NextResponse.json({ message: "Feedback URL not found" }, { status: 404 });
+    }
+    feedbackPost.urlId = null;
+    await feedbackPost.save();
+
+    console.log("Feedback deleted successfully:", feedbackPost);
+
+    return NextResponse.json({ message: "Feedback URL deleted successfully" }, { status: 200 });
+  } catch (error) {
+    console.error("Error deleting feedback:", error);
+    return NextResponse.json({ message: "Failed to delete feedback URL" }, { status: 500 });
   }
 }
