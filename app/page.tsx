@@ -108,7 +108,7 @@ export default function FeedbackDashboard() {
     try {
       setIsCopying(true)
       await navigator.clipboard.writeText(
-        `https://secret-feed-iflieycob-satishs-projects-85c5a408.vercel.app/writeFeedback/${urlId}`
+        `https://secret-feed.vercel.app/writeFeedback/${urlId}`
       )
       toast({
         title: "Copied!",
