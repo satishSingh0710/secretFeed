@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import axios from "axios";
 import { auth } from "@clerk/nextjs/server";
 import dbConnect from "@/lib/dbConnect";
 import Feedback from "@/models/feedback.models";
 
-export async function GET(request: NextRequest){
+export async function GET(){
     const { userId } = await auth();    
     if(!userId){
         return NextResponse.json({message: "Unauthorized"}, {status: 401});

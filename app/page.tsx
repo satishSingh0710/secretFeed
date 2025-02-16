@@ -92,6 +92,7 @@ export default function FeedbackDashboard() {
         variant: "success",
       })
     } catch (err: any) {
+      console.error("Error generating URL:", err)
       toast({
         title: "Error",
         description: "Failed to generate URL",
@@ -114,6 +115,7 @@ export default function FeedbackDashboard() {
         variant: "success",
       })
     } catch (err: any) {
+      console.error("Error copying URL:", err)
       toast({
         title: "Error",
         description: "Failed to copy URL",
@@ -135,6 +137,7 @@ export default function FeedbackDashboard() {
         variant: "success",
       })
     } catch (err: any) {
+      console.error("Error toggling URL:", err)
       toast({
         title: "Error",
         description: "Failed to update status",
@@ -155,6 +158,7 @@ export default function FeedbackDashboard() {
         variant: "destructive",
       })
     } catch (err: any) {
+      console.error("Error deleting URL:", err)
       toast({
         title: "Error",
         description: "Failed to delete URL",

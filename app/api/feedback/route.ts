@@ -3,7 +3,7 @@ import Feedback from "@/models/feedback.models";
 import dbConnect from "@/lib/dbConnect";
 import { auth } from "@clerk/nextjs/server";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     await dbConnect(); // Ensure database connection
 
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function POST(request: NextRequest, response: NextResponse) {
+export async function POST(request: NextRequest) {
   const { userId } = await auth();
   console.log("User ID:", userId);
   try {
