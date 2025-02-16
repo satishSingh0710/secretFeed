@@ -4,12 +4,16 @@ import { auth } from "@clerk/nextjs/server";
 import Feedback from "@/models/feedback.models";
 
 export async function POST(req: NextRequest, res: NextResponse) {
+  console.log("You are trying to submit a feedback!!!"); // Debugging
   const userId = await auth();
-
+  
   try {
     await dbConnect();
     const urlId = new URL(req.url).searchParams.get("urlId");
     const body = await req.json();
+
+    console.log("URL ID: ", urlId); // Debugging
+    console.log("Body: ", body); // Debugging
     const { feedback } = body;
     const feedbackData = {
       text: feedback,
@@ -20,10 +24,11 @@ export async function POST(req: NextRequest, res: NextResponse) {
       isActive: true,
     });
 
-
     if (!feedbackPost) {
       return NextResponse.json({ message: "Feedback not found", status: 404 });
     }
+
+    console.log(feedbackPost);
 
     if (feedbackPost.userId === userId) {
       return NextResponse.json({
@@ -44,7 +49,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
       message: "Feedback posted successfully",
       status: 200,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.log(error);
     return NextResponse.json({
       message: "Couldn't post feedback",

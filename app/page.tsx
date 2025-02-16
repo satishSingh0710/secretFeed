@@ -5,43 +5,60 @@ import { Button } from '@/components/ui/button'
 import { Copy, ToggleLeft, ToggleRight, Trash2, Link, Plus, Loader2 } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import generateUserFeedbackID from '@/utils/generateUserFeedbackID'
-import { getUserFeedbackId } from '@/utils/feedbackApiHandlers'
-import {toggleActiveState}  from '@/utils/feedbackApiHandlers/toggleActiveState'
-import  {deleteFeedbackURL} from '@/utils/feedbackApiHandlers/deleteFeedbackURL'
+import { getUserFeedbackId } from '@/utils/feedbackApiHandlers/getUserFeedbackId'
+import { toggleActiveState } from '@/utils/feedbackApiHandlers/toggleActiveState'
+import { deleteFeedbackURL } from '@/utils/feedbackApiHandlers/deleteFeedbackURL'
 import { useUser } from '@clerk/nextjs'
-import { useFeedbackStore, useStoreHydration } from '@/store/feedback-store'
 import { useToast } from "@/hooks/use-toast"
+import FeedbackCard from '@/components/FeedbackCard/page'
+import { Skeleton } from "@/components/ui/skeleton";
+import axios from 'axios'
+import { useRouter } from "next/navigation"
+import { UserButton } from "@clerk/nextjs"
+
 
 export default function FeedbackDashboard() {
+  const router = useRouter()
   const { user } = useUser()
   const { toast } = useToast()
-  const {
-    urlId,
-    isActive,
-    setUrlId,
-    toggleActive,
-    reset,
-    _hasHydrated
-  } = useFeedbackStore()
-  
-  useStoreHydration()
-  
-  const [isGenerating, setIsGenerating] = useState(false)
-  const [isCopying, setIsCopying] = useState(false)
-  const [isToggling, setIsToggling] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
+  const [urlId, setUrlId] = useState<string | null>(null)
+  const [isActive, toggleActive] = useState<boolean>(true)
+  const [isGenerating, setIsGenerating] = useState<boolean>(false)
+  const [isCopying, setIsCopying] = useState<boolean>(false)
+  const [isToggling, setIsToggling] = useState<boolean>(false)
+  const [isDeleting, setIsDeleting] = useState<boolean>(false)
+  const [isLoading, setIsLoading] = useState<boolean>(true)
+  const [feedbacks, setFeedbacks] = useState<{ text: string; createdAt: string }[]>([]);
+  const [feedbacksLoading, setFeedbacksLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    if (!user?.id) {
+      router.push("/sign-in")
+    }
+    const fetchFeedbacks = async () => {
+      try {
+        setFeedbacksLoading(true)
+        const response = await axios.get("/api/feedback");
+        setFeedbacks(response.data);
+      } catch (error: any) {
+        console.error("Error fetching feedbacks:", error);
+        setFeedbacks([]); 
+      } finally {
+        setFeedbacksLoading(false);
+      }
+    };
+    fetchFeedbacks();
+  }, [urlId]);
 
   useEffect(() => {
     const fetchUserFeedbackId = async () => {
-      if (user?.id && _hasHydrated) {
+      if (user?.id) {
         try {
-          const data = await getUserFeedbackId(user.id)
-          if (data?.urlId) {
-            setUrlId(data.urlId)
-            // Add isActive to your database response and update here
-          }
-        } catch (error) {
+          const data = await getUserFeedbackId()
+          if (!data) throw new Error('Failed to fetch feedback URL');
+          setUrlId(data.urlId);
+          toggleActive(data.isActive);
+        } catch (error: any) {
           toast({
             title: "Error",
             description: "Failed to fetch feedback URL",
@@ -52,11 +69,11 @@ export default function FeedbackDashboard() {
         }
       }
     }
-    
-    fetchUserFeedbackId()
-  }, [user?.id, _hasHydrated, setUrlId, toast])
 
-  if (!_hasHydrated || isLoading) {
+    fetchUserFeedbackId()
+  }, [user?.id, setUrlId, isDeleting])
+
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
@@ -74,7 +91,7 @@ export default function FeedbackDashboard() {
         description: "New feedback URL generated!",
         variant: "success",
       })
-    } catch (err) {
+    } catch (err: any) {
       toast({
         title: "Error",
         description: "Failed to generate URL",
@@ -89,14 +106,14 @@ export default function FeedbackDashboard() {
     try {
       setIsCopying(true)
       await navigator.clipboard.writeText(
-        `https://localhost:3000/writeFeedback/${urlId}`
+        `localhost:3000/writeFeedback/${urlId}`
       )
       toast({
         title: "Copied!",
         description: "URL copied to clipboard!",
         variant: "success",
       })
-    } catch (err) {
+    } catch (err: any) {
       toast({
         title: "Error",
         description: "Failed to copy URL",
@@ -110,14 +127,14 @@ export default function FeedbackDashboard() {
   const handleToggleActive = async () => {
     try {
       setIsToggling(true)
+      toggleActive(!isActive)
       await toggleActiveState(urlId!)
-      toggleActive()
       toast({
         title: "Status Updated",
         description: `Feedback URL ${!isActive ? 'activated' : 'deactivated'}`,
         variant: "success",
       })
-    } catch (err) {
+    } catch (err: any) {
       toast({
         title: "Error",
         description: "Failed to update status",
@@ -132,13 +149,12 @@ export default function FeedbackDashboard() {
     try {
       setIsDeleting(true)
       await deleteFeedbackURL(urlId!)
-      reset()
       toast({
         title: "Deleted!",
         description: "Feedback URL removed",
         variant: "destructive",
       })
-    } catch (err) {
+    } catch (err: any) {
       toast({
         title: "Error",
         description: "Failed to delete URL",
@@ -150,7 +166,13 @@ export default function FeedbackDashboard() {
   }
 
   return (
+    
     <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
+       {user?.id && (
+        <div className="absolute top-4 right-4">
+          <UserButton />
+        </div>
+      )}
       <div className="max-w-4xl mx-auto">
         <Card className="shadow-lg">
           <CardHeader>
@@ -158,7 +180,7 @@ export default function FeedbackDashboard() {
               Feedback URL Manager
             </CardTitle>
           </CardHeader>
-          
+
           <CardContent className="space-y-6">
             {!urlId ? (
               <div className="flex flex-col items-center justify-center py-8">
@@ -187,7 +209,7 @@ export default function FeedbackDashboard() {
                     <Link className="h-5 w-5 text-gray-500" />
                     <span className="text-gray-700 truncate">{urlId}</span>
                   </div>
-                  
+
                   <div className="flex gap-2 w-full sm:w-auto">
                     <Button
                       onClick={handleCopyURL}
@@ -202,14 +224,13 @@ export default function FeedbackDashboard() {
                       )}
                       Copy
                     </Button>
-                    
+
                     <Button
                       onClick={handleToggleActive}
-                      className={`flex-1 sm:flex-none text-white ${
-                        isActive 
-                          ? "bg-green-500 hover:bg-green-600" 
-                          : "bg-red-500 hover:bg-red-600"
-                      }`}
+                      className={`flex-1 sm:flex-none text-white ${isActive
+                        ? "bg-green-500 hover:bg-green-600"
+                        : "bg-red-500 hover:bg-red-600"
+                        }`}
                       disabled={isToggling}
                     >
                       {isToggling ? (
@@ -247,6 +268,27 @@ export default function FeedbackDashboard() {
                 </Alert>
               </>
             )}
+             <div className="mt-6 w-full max-w-lg">
+                  <h2 className="text-xl font-semibold text-gray-800 mb-4">Recent Feedbacks</h2>
+            
+                  {urlId && feedbacksLoading ? (
+                    // Show skeletons while loading
+                    <div className="space-y-3">
+                      <Skeleton className="h-16 w-full" />
+                      <Skeleton className="h-16 w-full" />
+                    </div>
+                  ) : feedbacks.length > 0 ? (
+                    // Show feedbacks
+                    <div className="space-y-4">
+                      {feedbacks.map((feedback, index) => (
+                        <FeedbackCard key={index} text={feedback.text} createdAt={feedback.createdAt} />
+                      ))}
+                    </div>
+                  ) : (
+                    // Show message if no feedbacks
+                    <p className="text-gray-500">No feedbacks yet.</p>
+                  )}
+                </div>
           </CardContent>
         </Card>
       </div>

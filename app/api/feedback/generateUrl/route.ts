@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
   } catch (error: any) {
     console.error("Error creating feedback:", error);
     return NextResponse.json(
-      { message: error.message || "Couldn't create feedback" },
+      { message: error.message || "Couldn't create feedback url" },
       { status: 500 }
     );
   }

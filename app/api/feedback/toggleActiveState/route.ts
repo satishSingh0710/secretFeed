@@ -57,7 +57,7 @@ export async function PUT(
       { status: 200 }
     );
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating feedback:', error);
     return NextResponse.json(
       { message: "Failed to toggle feedback state"},

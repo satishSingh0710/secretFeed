@@ -27,12 +27,13 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ message: "Feedback URL not found" }, { status: 404 });
     }
     feedbackPost.urlId = null;
+    feedbackPost.feedbacks = [];
     await feedbackPost.save();
 
     console.log("Feedback deleted successfully:", feedbackPost);
 
     return NextResponse.json({ message: "Feedback URL deleted successfully" }, { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error deleting feedback:", error);
     return NextResponse.json({ message: "Failed to delete feedback URL" }, { status: 500 });
   }

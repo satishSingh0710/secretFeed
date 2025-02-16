@@ -7,7 +7,7 @@ const FeedbackSchema = new mongoose.Schema({
   feedbacks: [
     {
       text: { type: String },
-      createdAt: { type: Date, default: Date.now, index: { expires: "24h" } }, // TTL index
+      createdAt: { type: Date, default: Date.now, index: { expires: "24h" } },// TTL index
     }
   ],
   isActive: { type: Boolean, default: true, required: true},
