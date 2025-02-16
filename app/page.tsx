@@ -42,7 +42,7 @@ export default function FeedbackDashboard() {
         setFeedbacks(response.data);
       } catch (error: any) {
         console.error("Error fetching feedbacks:", error);
-        setFeedbacks([]); 
+        setFeedbacks([]);
       } finally {
         setFeedbacksLoading(false);
       }
@@ -55,7 +55,7 @@ export default function FeedbackDashboard() {
       if (user?.id) {
         try {
           const data = await getUserFeedbackId()
-          if (!data) throw new Error('Failed to fetch feedback URL');
+          if (!data) throw new Error('Generate your feedback ID first...');
           setUrlId(data.urlId);
           toggleActive(data.isActive);
         } catch (error: any) {
@@ -171,9 +171,9 @@ export default function FeedbackDashboard() {
   }
 
   return (
-    
+
     <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
-       {user?.id && (
+      {user?.id && (
         <div className="absolute top-4 right-4">
           <UserButton />
         </div>
@@ -215,7 +215,7 @@ export default function FeedbackDashboard() {
                     <span className="text-gray-700 truncate">{urlId}</span>
                   </div>
 
-                  <div className="flex gap-2 w-full sm:w-auto">
+                  <div className="flex sm:flex-row gap-2 w-full lg:w-auto">
                     <Button
                       onClick={handleCopyURL}
                       variant="outline"
@@ -273,27 +273,27 @@ export default function FeedbackDashboard() {
                 </Alert>
               </>
             )}
-             <div className="mt-6 w-full max-w-lg">
-                  <h2 className="text-xl font-semibold text-gray-800 mb-4">Recent Feedbacks</h2>
-            
-                  {urlId && feedbacksLoading ? (
-                    // Show skeletons while loading
-                    <div className="space-y-3">
-                      <Skeleton className="h-16 w-full" />
-                      <Skeleton className="h-16 w-full" />
-                    </div>
-                  ) : feedbacks.length > 0 ? (
-                    // Show feedbacks
-                    <div className="space-y-4">
-                      {feedbacks.map((feedback, index) => (
-                        <FeedbackCard key={index} text={feedback.text} createdAt={feedback.createdAt} />
-                      ))}
-                    </div>
-                  ) : (
-                    // Show message if no feedbacks
-                    <p className="text-gray-500">No feedbacks yet.</p>
-                  )}
+            <div className="mt-6 w-full max-w-lg">
+              <h2 className="text-xl font-semibold text-gray-800 mb-4">Recent Feedbacks</h2>
+
+              {urlId && feedbacksLoading ? (
+                // Show skeletons while loading
+                <div className="space-y-3">
+                  <Skeleton className="h-16 w-full" />
+                  <Skeleton className="h-16 w-full" />
                 </div>
+              ) : feedbacks.length > 0 ? (
+                // Show feedbacks
+                <div className="space-y-4">
+                  {feedbacks.map((feedback, index) => (
+                    <FeedbackCard key={index} text={feedback.text} createdAt={feedback.createdAt} />
+                  ))}
+                </div>
+              ) : (
+                // Show message if no feedbacks
+                <p className="text-gray-500">No feedbacks yet.</p>
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>
