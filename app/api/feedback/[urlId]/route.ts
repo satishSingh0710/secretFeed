@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import Feedback from "@/models/feedback.models";
 
-export async function POST(req: NextRequest, res: NextResponse) {
+export async function POST(req: NextRequest) {
   console.log("You are trying to submit a feedback!!!"); // Debugging
   const userId = await auth();
   
@@ -58,7 +58,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
   }
 }
 
-export async function GET(req: NextRequest, res: NextResponse) {
+export async function GET() {
   const { userId } = await auth();
 
   if (!userId) {
@@ -76,7 +76,8 @@ export async function GET(req: NextRequest, res: NextResponse) {
     }
     const allFeedbacks = feedbacks.flatMap((doc) => doc.feedbacks);
     return NextResponse.json({ feedbacks: allFeedbacks, status: 200 });
-  } catch (error) {
+  } catch (error: any) {
+    console.log(error);
     return NextResponse.json({
       message: "Couldn't fetch feedbacks",
       status: 500,

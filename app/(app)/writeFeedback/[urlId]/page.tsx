@@ -46,12 +46,13 @@ export default function FeedbackPage() {
       });
 
       setSubmitted(true); // Show thank-you page
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Error",
         description: "Failed to submit feedback",
         variant: "destructive",
       });
+      console.log("Error submitting feedback:", error); // Log error to console
     } finally {
       setIsSubmitting(false);
     }
