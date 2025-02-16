@@ -15,7 +15,7 @@ export default function FeedbackPage() {
   const { toast } = useToast();
   const { userId } = useAuth(); // Get user ID from Clerk authentication
 
-  const [feedback, setFeedback] = useState("");
+  
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [countdown, setCountdown] = useState(5);
@@ -23,7 +23,7 @@ export default function FeedbackPage() {
 
   // Handle textarea change
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setFeedback(e.target.value);
+    setMessage(e.target.value);
   };
 
   // Handle form submission
@@ -33,7 +33,7 @@ export default function FeedbackPage() {
     
     const urlId: string = params.urlId as string;
     const formData = new FormData();
-    formData.append("feedback", feedback);
+    formData.append("feedback", message);
     formData.append("urlId", urlId);
 
     
@@ -50,10 +50,10 @@ export default function FeedbackPage() {
     } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to submit feedback",
+        description: "Failed to send message",
         variant: "destructive",
       });
-      console.log("Error submitting feedback:", error); // Log error to console
+      console.log("Error submitting message:", error); // Log error to console
     } finally {
       setIsSubmitting(false);
     }
@@ -82,7 +82,7 @@ export default function FeedbackPage() {
           <div>
           <h2 className="text-3xl font-semibold text-gray-800 mb-4">Thank You!</h2>
           <p className="text-gray-600 mb-4">
-            Your feedback has been received. You will be redirected in <strong>{countdown}</strong> seconds.
+            Your message has been received. You will be redirected in <strong>{countdown}</strong> seconds.
           </p>
           <p className="text-sm text-gray-500 animate-pulse">Redirecting...</p> {/* Simple animated loader */}
         </div>
