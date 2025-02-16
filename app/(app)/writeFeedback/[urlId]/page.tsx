@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, Send} from "lucide-react";
 import axios from "axios";
 import { useAuth } from "@clerk/nextjs";
 
@@ -19,6 +19,7 @@ export default function FeedbackPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [countdown, setCountdown] = useState(5);
+  const [message, setMessage] = useState("");
 
   // Handle textarea change
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -88,27 +89,23 @@ export default function FeedbackPage() {
         ) : (
           // Feedback Form
           <div>
-            <h2 className="text-3xl font-semibold text-gray-800 mb-4">Share Your Feedback</h2>
-            <form onSubmit={handleSubmit}>
-              <div className="mb-4">
-                <label htmlFor="feedback" className="block text-sm font-medium text-gray-700">
-                  Your Feedback:
-                </label>
-                <Textarea
-                  id="feedback"
-                  value={feedback}
-                  onChange={handleChange}
-                  rows={6}
-                  placeholder="Write your feedback here..."
-                  className="w-full p-3 mt-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
+         <h2 className="text-2xl font-bold text-gray-800 mb-3">Send an Anonymous Message</h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <Textarea
+                id="message"
+                value={message}
+                onChange={handleChange}
+                rows={5}
+                placeholder="Write your message here..."
+                className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
               <Button
                 type="submit"
-                className="w-full py-2 mt-4 text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
-                disabled={isSubmitting || !feedback}
+                className="w-full flex items-center justify-center gap-2 py-2 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                disabled={isSubmitting || !message}
               >
-                {isSubmitting ? <Loader2 className="animate-spin" /> : "Submit Feedback"}
+                {isSubmitting ? <Loader2 className="animate-spin" /> : <Send className="w-5 h-5" />} 
+                {isSubmitting ? "Sending..." : "Send Message"}
               </Button>
             </form>
           </div>
