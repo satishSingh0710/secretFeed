@@ -1,19 +1,19 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server';
 
-// const isPrivateRoute = createRouteMatcher([
-//   "/", 
-// ])
+const isPrivateRoute = createRouteMatcher([
+  "/", 
+])
 
-// export default clerkMiddleware(async (auth, req) => {
-//     const {userId} = await auth(); 
+export default clerkMiddleware(async (auth, req) => {
+    const { userId } = await auth(); 
 
-//     if (isPrivateRoute(req) && !userId) {
-//        NextResponse.redirect(new URL("/sign-in", req.url)); 
-//     }
+    if (isPrivateRoute(req) && !userId) {
+       NextResponse.redirect(new URL("/sign-up", req.url)); 
+    }
 
-// })
-export default clerkMiddleware(); 
+})
+// export default clerkMiddleware(); 
 
 export const config = {
   matcher: [

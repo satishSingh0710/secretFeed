@@ -32,7 +32,7 @@ export default function FeedbackDashboard() {
   const [feedbacksLoading, setFeedbacksLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    if (!user?.id) {
+    if (!user?.id || !user) {
       router.push("/sign-in")
     }
     const fetchFeedbacks = async () => {
@@ -48,7 +48,7 @@ export default function FeedbackDashboard() {
       }
     };
     fetchFeedbacks();
-  }, [urlId]);
+  }, [user]);
 
   useEffect(() => {
     const fetchUserFeedbackId = async () => {
