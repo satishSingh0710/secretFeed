@@ -215,7 +215,7 @@ export default function FeedbackDashboard() {
                     <span className="text-gray-700 truncate">{urlId}</span>
                   </div>
 
-                  <div className="flex sm:flex-row gap-2 w-full lg:w-auto">
+                  <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                     <Button
                       onClick={handleCopyURL}
                       variant="outline"
