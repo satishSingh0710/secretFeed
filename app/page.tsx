@@ -12,9 +12,9 @@ import { useUser } from '@clerk/nextjs'
 import { useToast } from "@/hooks/use-toast"
 import FeedbackCard from '@/components/FeedbackCard/page'
 import { Skeleton } from "@/components/ui/skeleton";
-import axios from 'axios'
 import { useRouter } from "next/navigation"
 import { UserButton } from "@clerk/nextjs"
+import { getUserFeedbacks } from '@/utils/feedbackApiHandlers/getUserFeedbacks'
 
 
 export default function FeedbackDashboard() {
@@ -38,7 +38,7 @@ export default function FeedbackDashboard() {
     const fetchFeedbacks = async () => {
       try {
         setFeedbacksLoading(true)
-        const response = await axios.get("/api/feedback");
+        const response = await getUserFeedbacks(); 
         setFeedbacks(response.data);
       } catch (error: any) {
         console.error("Error fetching feedbacks:", error);
@@ -47,10 +47,6 @@ export default function FeedbackDashboard() {
         setFeedbacksLoading(false);
       }
     };
-    fetchFeedbacks();
-  }, [user]);
-
-  useEffect(() => {
     const fetchUserFeedbackId = async () => {
       if (user?.id) {
         try {
@@ -72,7 +68,12 @@ export default function FeedbackDashboard() {
     }
 
     fetchUserFeedbackId()
-  }, [user?.id, setUrlId, isDeleting])
+    fetchFeedbacks();
+  }, [user,setUrlId, isDeleting]);
+
+  // useEffect(() => {
+
+  // }, [user?.id, setUrlId, isDeleting])
 
   if (isLoading) {
     return (
