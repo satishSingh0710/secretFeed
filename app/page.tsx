@@ -59,6 +59,7 @@ export default function FeedbackDashboard() {
           setUrlId(data.urlId);
           toggleActive(data.isActive);
         } catch (error: any) {
+          console.error("Error fetching feedback URL:", error)
           toast({
             title: "Error",
             description: "Failed to fetch feedback URL",
