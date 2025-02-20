@@ -3,7 +3,7 @@ import next from "next";
 import { Server as SocketIOServer } from "socket.io";
 
 const dev = process.env.NODE_ENV !== "production";
-const hostname = "localhost";
+const hostname = "0.0.0.0";
 const port = 3001;
 
 const app = next({ dev, hostname, port });
@@ -29,7 +29,8 @@ app.prepare().then(() => {
     });
 
     socket.on("newMessage", (data) => {
-      io.to(data.urlId).emit("messageReceived", data.message);
+      console.log("Current data is: ", data); 
+      io.to(data.urlId).emit("messageReceived", data);
     });
 
     socket.on("disconnect", () => {

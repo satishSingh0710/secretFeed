@@ -15,6 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useRouter } from "next/navigation"
 import { UserButton } from "@clerk/nextjs"
 import { getUserFeedbacks } from '@/utils/feedbackApiHandlers/getUserFeedbacks'
+import { socket } from '@/socket'
 
 
 export default function FeedbackDashboard() {
@@ -70,6 +71,18 @@ export default function FeedbackDashboard() {
     fetchUserFeedbackId()
     fetchFeedbacks();
   }, [user,setUrlId, isDeleting]);
+
+  useEffect(() => {
+      if(!urlId) return 
+
+      socket.emit("joinRoom", urlId); 
+
+      socket.on("messageReceived", (data) => {
+        console.log("Data received is : ", data); 
+        setFeedbacks((prev) => [...prev, {text: data.message, createdAt: data.createdAt}])
+      }); 
+
+  }, [urlId])
 
   // useEffect(() => {
 

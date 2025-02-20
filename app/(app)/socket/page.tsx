@@ -34,11 +34,16 @@ export default function Home() {
         socket.off("disconnect", onDisconnect);
       };
     }, []);
+
+    async function handleClick() {
+        socket.emit("newMessage", "The hell is wrong with you ??"); 
+    }
   
     return (
       <div>
         <p>Status: { isConnected ? "connected" : "disconnected" }</p>
         <p>Transport: { transport }</p>
+        <button onClick={handleClick}>CLICK ME</button>
       </div>
     );
   }
