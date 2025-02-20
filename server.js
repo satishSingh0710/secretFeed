@@ -38,7 +38,7 @@ app.prepare().then(() => {
     });
   });
 
-  httpServer.listen(port, () => {
-    console.log(`🚀 WebSocket server running on http://${hostname}:${port}`);
+  httpServer.listen(port, "0.0.0.0", () => {
+    console.log(`🚀 WebSocket server running on ${port}`);
   });
 });
