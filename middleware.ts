@@ -7,6 +7,12 @@ const isPrivateRoute = createRouteMatcher([
 
 export default clerkMiddleware(async (auth, req) => {
     const { userId } = await auth(); 
+    const { pathname } = new URL(req.url);
+
+    // Skip middleware for WebSocket connections
+    if (pathname.startsWith("/socket.io")) {
+      return NextResponse.next();
+    }
 
     if (isPrivateRoute(req) && !userId) {
        NextResponse.redirect(new URL("/sign-up", req.url)); 

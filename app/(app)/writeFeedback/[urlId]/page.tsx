@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, Send} from "lucide-react";
 import axios from "axios";
 import { useAuth } from "@clerk/nextjs";
+import { socket } from "@/socket";
 
 export default function FeedbackPage() {
   const params = useParams();
@@ -39,7 +40,11 @@ export default function FeedbackPage() {
     
     try {
       await axios.post(`/api/feedback`, formData);
-
+      socket.emit("newMessage", {
+         urlId, 
+         message: formData.get("feedback"), 
+         createdAt: Date.now()
+      })
       toast({
         title: "Success",
         description: "Feedback submitted successfully!",
