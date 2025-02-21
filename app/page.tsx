@@ -36,57 +36,47 @@ export default function FeedbackDashboard() {
     if (!user?.id || !user) {
       router.push("/sign-in")
     }
+    console.log("Testing")
     const fetchFeedbacks = async () => {
       try {
         setFeedbacksLoading(true)
-        const response = await getUserFeedbacks(); 
-        setFeedbacks(response.data);
+        const response = await getUserFeedbacks();
+        console.log(response);
+        setFeedbacks(response.data.feedbacks);
+        if (response.data.urlId != null) {
+          setUrlId(response.data.urlId);
+          toggleActive(response.data.isActive);
+        }
       } catch (error: any) {
         console.error("Error fetching feedbacks:", error);
         setFeedbacks([]);
       } finally {
         setFeedbacksLoading(false);
-      }
-    };
-    const fetchUserFeedbackId = async () => {
-      if (user?.id) {
-        try {
-          const data = await getUserFeedbackId()
-          if (!data) throw new Error('Generate your feedback ID first...');
-          setUrlId(data.urlId);
-          toggleActive(data.isActive);
-        } catch (error: any) {
-          console.error("Error fetching feedback URL:", error)
-          toast({
-            title: "Error",
-            description: "Failed to fetch feedback URL",
-            variant: "destructive",
-          })
-        } finally {
-          setIsLoading(false)
-        }
+        setIsLoading(false); 
       }
     }
 
-    fetchUserFeedbackId()
     fetchFeedbacks();
-  }, [user,setUrlId, isDeleting]);
-
-  useEffect(() => {
-      if(!urlId) return 
-
-      socket.emit("joinRoom", urlId); 
-
+    if (urlId) {
+      socket.emit("joinRoom", urlId);
       socket.on("messageReceived", (data) => {
-        console.log("Data received is : ", data); 
-        setFeedbacks((prev) => [...prev, {text: data.message, createdAt: data.createdAt}])
-      }); 
-
-  }, [urlId])
+        console.log("Data received is : ", data);
+        setFeedbacks((prev) => [...prev, { text: data.message, createdAt: data.createdAt }])
+      });
+    }
+  }, [user, urlId]);
 
   // useEffect(() => {
+  //   if (!urlId) return
 
-  // }, [user?.id, setUrlId, isDeleting])
+  //   socket.emit("joinRoom", urlId);
+
+  //   socket.on("messageReceived", (data) => {
+  //     console.log("Data received is : ", data);
+  //     setFeedbacks((prev) => [...prev, { text: data.message, createdAt: data.createdAt }])
+  //   });
+
+  // }, [urlId])
 
   if (isLoading) {
     return (
@@ -172,6 +162,7 @@ export default function FeedbackDashboard() {
         description: "Feedback URL removed",
         variant: "destructive",
       })
+      setUrlId(null);
     } catch (err: any) {
       console.error("Error deleting URL:", err)
       toast({

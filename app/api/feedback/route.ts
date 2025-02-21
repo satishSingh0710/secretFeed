@@ -24,7 +24,7 @@ export async function GET() {
 
     console.log("Feedback found:", feedback);
 
-    return NextResponse.json(feedback.feedbacks, { status: 200 });
+    return NextResponse.json(feedback, { status: 200 });
   } catch (error: any) {
     console.error("Error fetching feedback:", error);
     return NextResponse.json(
