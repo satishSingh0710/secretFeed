@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button'
 import { Copy, ToggleLeft, ToggleRight, Trash2, Link, Plus, Loader2 } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import generateUserFeedbackID from '@/utils/generateUserFeedbackID'
-import { getUserFeedbackId } from '@/utils/feedbackApiHandlers/getUserFeedbackId'
 import { toggleActiveState } from '@/utils/feedbackApiHandlers/toggleActiveState'
 import { deleteFeedbackURL } from '@/utils/feedbackApiHandlers/deleteFeedbackURL'
 import { useUser } from '@clerk/nextjs'
@@ -57,6 +56,7 @@ export default function FeedbackDashboard() {
     }
 
     fetchFeedbacks();
+    
     if (urlId) {
       socket.emit("joinRoom", urlId);
       socket.on("messageReceived", (data) => {
@@ -66,17 +66,6 @@ export default function FeedbackDashboard() {
     }
   }, [user, urlId]);
 
-  // useEffect(() => {
-  //   if (!urlId) return
-
-  //   socket.emit("joinRoom", urlId);
-
-  //   socket.on("messageReceived", (data) => {
-  //     console.log("Data received is : ", data);
-  //     setFeedbacks((prev) => [...prev, { text: data.message, createdAt: data.createdAt }])
-  //   });
-
-  // }, [urlId])
 
   if (isLoading) {
     return (
