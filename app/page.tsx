@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Copy, ToggleLeft, ToggleRight, Trash2, Link, Plus, Loader2 } from 'lucide-react'
+import { Copy, ToggleLeft, ToggleRight, Trash2, Link, Plus, Loader2, Moon, Sun } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import generateUserFeedbackID from '@/utils/generateUserFeedbackID'
 import { toggleActiveState } from '@/utils/feedbackApiHandlers/toggleActiveState'
@@ -30,42 +30,80 @@ export default function FeedbackDashboard() {
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [feedbacks, setFeedbacks] = useState<{ text: string; createdAt: string }[]>([]);
   const [feedbacksLoading, setFeedbacksLoading] = useState<boolean>(true);
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
-    if (!user?.id || !user) {
-      router.push("/sign-in")
+    if (!user?.id) {
+      router.push("/sign-in");
     }
-    console.log("Testing")
+  }, [user]);
+  
+  useEffect(() => {
     const fetchFeedbacks = async () => {
       try {
-        setFeedbacksLoading(true)
+        setFeedbacksLoading(true);
         const response = await getUserFeedbacks();
-        console.log(response);
-        setFeedbacks(response.data.feedbacks);
-        if (response.data.urlId != null) {
+        setFeedbacks(response.data.feedbacks || []);
+        if (response.data.urlId) {
           setUrlId(response.data.urlId);
           toggleActive(response.data.isActive);
         }
-      } catch (error: any) {
+      } catch (error) {
         console.error("Error fetching feedbacks:", error);
         setFeedbacks([]);
       } finally {
         setFeedbacksLoading(false);
-        setIsLoading(false); 
+        setIsLoading(false);
       }
+    };
+  
+    if (user?.id) {
+      fetchFeedbacks();
     }
-
-    fetchFeedbacks();
-    
+  }, [user]);
+  
+  useEffect(() => {
     if (urlId) {
       socket.emit("joinRoom", urlId);
-      socket.on("messageReceived", (data) => {
-        console.log("Data received is : ", data);
-        setFeedbacks((prev) => [...prev, { text: data.message, createdAt: data.createdAt }])
-      });
+      const handleMessageReceived = (data: { message: string; createdAt: string }) => {
+        setFeedbacks((prev) => [...prev, { text: data.message, createdAt: data.createdAt }]);
+      };
+      socket.on("messageReceived", handleMessageReceived);
+  
+      return () => {
+        socket.off("messageReceived", handleMessageReceived);
+      };
     }
-  }, [user, urlId]);
-
+  }, [urlId]);
+  
+  // Add theme toggle function
+  const toggleTheme = () => {
+    const newTheme = !isDarkMode;
+    setIsDarkMode(newTheme);
+    
+    // Add/remove dark class from document
+    if (newTheme) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+  };
+  
+  // Initialize theme on component mount
+  useEffect(() => {
+    // Check for saved theme preference or use system preference
+    const savedTheme = localStorage.getItem("theme");
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    
+    const shouldUseDarkMode = savedTheme === "dark" || (!savedTheme && prefersDark);
+    
+    if (shouldUseDarkMode) {
+      document.documentElement.classList.add("dark");
+      setIsDarkMode(true);
+    }
+  }, []);
 
   if (isLoading) {
     return (
@@ -165,17 +203,30 @@ export default function FeedbackDashboard() {
   }
 
   return (
-
-    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
-      {user?.id && (
-        <div className="absolute top-4 right-4">
-          <UserButton />
-        </div>
-      )}
+    <div className={`min-h-screen p-4 sm:p-6 lg:p-8 ${isDarkMode ? 'dark:bg-gray-900' : 'bg-gray-50'}`}>
+      <div className="absolute top-4 right-4 flex items-center gap-4">
+        {/* Theme toggle button */}
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={toggleTheme}
+          className="rounded-full h-10 w-10 p-0 flex items-center justify-center border border-gray-200 dark:border-gray-700"
+          aria-label="Toggle theme"
+        >
+          {isDarkMode ? (
+            <Sun className="h-5 w-5 text-yellow-500" />
+          ) : (
+            <Moon className="h-5 w-5 text-gray-700" />
+          )}
+        </Button>
+        
+        {user?.id && <UserButton />}
+      </div>
+      
       <div className="max-w-4xl mx-auto">
-        <Card className="shadow-lg">
+        <Card className="shadow-lg dark:bg-gray-800 dark:text-white">
           <CardHeader>
-            <CardTitle className="text-2xl font-bold text-gray-900">
+            <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">
               Feedback URL Manager
             </CardTitle>
           </CardHeader>
